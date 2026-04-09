@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LJMP Server List</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #1e1e1e;
+        color: #f0f0f0;
+        margin: 0;
+        padding: 0;
+    }
+    header {
+        background: #282828;
+        padding: 20px;
+        text-align: center;
+        font-size: 1.8em;
+        font-weight: bold;
+        color: #ff6f61;
+    }
+    .server-list {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 20px;
+        gap: 15px;
+    }
+    .server {
+        background: #333;
+        width: 90%;
+        max-width: 800px;
+        padding: 15px 20px;
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: transform 0.2s, background 0.2s;
+    }
+    .server:hover {
+        transform: scale(1.02);
+        background: #444;
+    }
+    .server-info {
+        display: flex;
+        flex-direction: column;
+    }
+    .server-name {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #ffcc00;
+    }
+    .server-ip {
+        font-size: 0.9em;
+        color: #ccc;
+    }
+    .players {
+        font-weight: bold;
+        color: #4caf50;
+    }
+    footer {
+        text-align: center;
+        padding: 15px;
+        background: #282828;
+        color: #888;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+    }
+</style>
+</head>
+<body>
+<header>LJMP Server List</header>
+
+<div class="server-list" id="serverList">
+    Loading servers...
+</div>
+
+<footer>Made by YourName | LJMP Community</footer>
+
+<script>
+// Replace this with your actual server endpoint
+const SERVER_ENDPOINT = "http://127.0.0.1:7777/server_info";
+
+async function loadServer() {
+    const serverList = document.getElementById('serverList');
+    serverList.innerHTML = "Loading...";
+
+    try {
+        const response = await fetch(SERVER_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: "get_server_info" })
+        });
+
+        const server = await response.json();
+
+        // Clear the loading text
+        serverList.innerHTML = "";
+
+        const div = document.createElement('div');
+        div.classList.add('server');
+        div.innerHTML = `
+            <div class="server-info">
+                <span class="server-name">${server.Name}</span>
+                <span class="server-ip">${server.Ip}</span>
+                <span class="server-gamemode">${server.Gamemode}</span>
+            </div>
+            <span class="players">${server.Players}/${server.MaxPlayers}</span>
+        `;
+        serverList.appendChild(div);
+
+    } catch (err) {
+        serverList.innerHTML = "Failed to load server info.";
+        console.error(err);
+    }
+}
+
+// Auto-refresh every 10 seconds
+loadServer();
+setInterval(loadServer, 10000);
+</script>
+
+</body>
+</html>
