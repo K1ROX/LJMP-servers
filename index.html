@@ -77,49 +77,60 @@
     Loading servers...
 </div>
 
-<footer>Made by YourName | LJMP Community</footer>
+<footer>LJMP 2026</footer>
 
 <script>
-// Replace this with your actual server endpoint
-const SERVER_ENDPOINT = "http://127.0.0.1:7777/server_info";
+// --- EASY SERVER CONFIGURATION ---
+// Just add IPs here. Format: "http://IP:PORT/server_info"
+const SERVERS = [
+    "127.0.0.1:7777",
+    "192.168.1.50:7777",
+    // Add more servers here
+];
 
-async function loadServer() {
-    const serverList = document.getElementById('serverList');
-    serverList.innerHTML = "Loading...";
-
+async function fetchServer(url) {
     try {
-        const response = await fetch(SERVER_ENDPOINT, {
+        const response = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ type: "get_server_info" })
         });
+        return await response.json();
+    } catch (err) {
+        console.error("Failed to fetch", url, err);
+        return null;
+    }
+}
 
-        const server = await response.json();
+async function loadServers() {
+    const serverList = document.getElementById('serverList');
+    serverList.innerHTML = "";
 
-        // Clear the loading text
-        serverList.innerHTML = "";
+    for (const url of SERVERS) {
+        const server = await fetchServer(url);
 
         const div = document.createElement('div');
         div.classList.add('server');
-        div.innerHTML = `
-            <div class="server-info">
-                <span class="server-name">${server.Name}</span>
-                <span class="server-ip">${server.Ip}</span>
-                <span class="server-gamemode">${server.Gamemode}</span>
-            </div>
-            <span class="players">${server.Players}/${server.MaxPlayers}</span>
-        `;
-        serverList.appendChild(div);
 
-    } catch (err) {
-        serverList.innerHTML = "Failed to load server info.";
-        console.error(err);
+        if (server) {
+            div.innerHTML = url;
+        } else {
+            div.innerHTML = `
+                <div class="server-info">
+                    <span class="server-name">Server Offline</span>
+                    <span class="server-ip">${url}</span>
+                </div>
+                <span class="players">--/--</span>
+            `;
+        }
+
+        serverList.appendChild(div);
     }
 }
 
 // Auto-refresh every 10 seconds
-loadServer();
-setInterval(loadServer, 10000);
+loadServers();
+setInterval(loadServers, 10000);
 </script>
 
 </body>
